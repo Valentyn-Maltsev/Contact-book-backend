@@ -32,9 +32,16 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\OneToMany(mappedBy: 'user', targetEntity: ApiToken::class, orphanRemoval: true)]
     private Collection $apiTokens;
 
+    #[ORM\OneToOne(mappedBy: 'user', cascade: ['persist', 'remove'])]
+    private ?UserProfile $userProfile = null;
+
+    #[ORM\OneToMany(mappedBy: 'owner', targetEntity: Contact::class, orphanRemoval: true)]
+    private Collection $contacts;
+
     public function __construct()
     {
         $this->apiTokens = new ArrayCollection();
+        $this->contacts = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -131,6 +138,53 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
             // set the owning side to null (unless already changed)
             if ($apiToken->getUser() === $this) {
                 $apiToken->setUser(null);
+            }
+        }
+
+        return $this;
+    }
+
+    public function getUserProfile(): ?UserProfile
+    {
+        return $this->userProfile;
+    }
+
+    public function setUserProfile(UserProfile $userProfile): self
+    {
+        // set the owning side of the relation if necessary
+        if ($userProfile->getUser() !== $this) {
+            $userProfile->setUser($this);
+        }
+
+        $this->userProfile = $userProfile;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Contact>
+     */
+    public function getContacts(): Collection
+    {
+        return $this->contacts;
+    }
+
+    public function addContact(Contact $contact): self
+    {
+        if (!$this->contacts->contains($contact)) {
+            $this->contacts->add($contact);
+            $contact->setOwner($this);
+        }
+
+        return $this;
+    }
+
+    public function removeContact(Contact $contact): self
+    {
+        if ($this->contacts->removeElement($contact)) {
+            // set the owning side to null (unless already changed)
+            if ($contact->getOwner() === $this) {
+                $contact->setOwner(null);
             }
         }
 
