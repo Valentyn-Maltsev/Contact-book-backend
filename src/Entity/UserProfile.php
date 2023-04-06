@@ -3,45 +3,72 @@
 namespace App\Entity;
 
 use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\Get;
+use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\Metadata\Patch;
+use ApiPlatform\Metadata\Post;
 use App\Repository\UserProfileRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use phpDocumentor\Reflection\Types\Integer;
+use Symfony\Component\Serializer\Annotation\Groups;
 
 #[ORM\Entity(repositoryClass: UserProfileRepository::class)]
-#[ApiResource]
+#[ApiResource(
+    operations: [
+        new Get(),
+        new Post(),
+        new Patch()
+    ],
+    normalizationContext: [
+        'groups' => ['profile:read'],
+    ],
+    denormalizationContext: [
+        'groups' => ['profile:write'],
+    ]
+)]
 class UserProfile
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
-    #[ORM\Column]
+    #[ORM\Column(type: Integer::class)]
     private ?int $id = null;
 
     #[ORM\OneToOne(inversedBy: 'userProfile', cascade: ['persist', 'remove'])]
     #[ORM\JoinColumn(nullable: false)]
+    #[Groups(['profile:read', 'profile:write'])]
     private ?User $user = null;
 
     #[ORM\Column(length: 255, nullable: true)]
+    #[Groups(['profile:read', 'profile:write'])]
     private ?string $email = null;
 
     #[ORM\Column(length: 255, nullable: true)]
+    #[Groups(['profile:read', 'profile:write'])]
     private ?string $firstName = null;
 
     #[ORM\Column(length: 255, nullable: true)]
+    #[Groups(['profile:read', 'profile:write'])]
     private ?string $lastName = null;
 
     #[ORM\Column(length: 255, nullable: true)]
+    #[Groups(['profile:read', 'profile:write'])]
     private ?string $phone = null;
 
     #[ORM\ManyToOne(inversedBy: 'userProfiles')]
+    #[Groups(['profile:read', 'profile:write'])]
     private ?City $city = null;
 
     #[ORM\ManyToOne(inversedBy: 'userProfiles')]
+    #[Groups(['profile:read', 'profile:write'])]
     private ?Country $country = null;
 
     #[ORM\Column(type: Types::DATE_MUTABLE, nullable: true)]
+    #[Groups(['profile:read', 'profile:write'])]
     private ?\DateTimeInterface $birthDay = null;
 
     #[ORM\Column(length: 255, nullable: true)]
+    #[Groups(['profile:read', 'profile:write'])]
     private ?string $photoUrl = null;
 
     public function getId(): ?int
