@@ -12,6 +12,8 @@ use App\Repository\ContactRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
+use Symfony\Component\Validator\Constraints as Assert;
+use Symfony\Component\Validator\Context\ExecutionContextInterface;
 
 #[ORM\Entity(repositoryClass: ContactRepository::class)]
 #[ApiResource(
@@ -46,22 +48,41 @@ class Contact
 
     #[ORM\Column(length: 255)]
     #[Groups(['contact:read', 'contact:write'])]
+    #[Assert\NotBlank]
     private ?string $firstName = null;
 
     #[ORM\Column(length: 255, nullable: true)]
     #[Groups(['contact:read', 'contact:write'])]
+    #[Assert\Length(
+        min: 2,
+        max: 50,
+        minMessage: 'First name must be at least {{ limit }} characters long',
+        maxMessage: 'First name cannot be longer than {{ limit }} characters',
+    )]
     private ?string $lastName = null;
 
     #[ORM\Column(length: 255, nullable: true)]
     #[Groups(['contact:read', 'contact:write'])]
+    #[Assert\Email]
+    #[Assert\Length(
+        min: 2,
+        max: 50,
+        minMessage: 'Last name must be at least {{ limit }} characters long',
+        maxMessage: 'Last name cannot be longer than {{ limit }} characters',
+    )]
     private ?string $email = null;
 
     #[ORM\Column(length: 255, nullable: true)]
     #[Groups(['contact:read', 'contact:write'])]
+    #[Assert\Regex(
+        pattern: "/^\+[0-9]{12}$/",
+        message: "Phone number should start from + and be 12 digits long"
+    )]
     private ?string $phone = null;
 
     #[ORM\Column(type: Types::DATE_MUTABLE, nullable: true)]
     #[Groups(['contact:read', 'contact:write'])]
+    #[Assert\DateTime]
     private ?\DateTimeInterface $birthDay = null;
 
     #[ORM\ManyToOne(targetEntity: Country::class)]
@@ -78,11 +99,25 @@ class Contact
 
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     #[Groups(['contact:read', 'contact:write'])]
+    #[Assert\Length(
+        max: 1000,
+        maxMessage: 'Description cannot be longer than {{ limit }} characters',
+    )]
     private ?string $description = null;
 
     #[ORM\ManyToOne]
     #[Groups(['contact:read', 'contact:write'])]
     private ?ContactGroup $contactGroup = null;
+
+    /**
+     * @Assert\Callback
+     */
+    public function validateFields(ExecutionContextInterface $context)
+    {
+        if ('' === $this->email && '' === $this->phone) {
+            $context->addViolation('You should to specify the email or phone number, at least one of the fields');
+        }
+    }
 
     public function getId(): ?int
     {
