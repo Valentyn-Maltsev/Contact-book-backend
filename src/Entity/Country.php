@@ -24,6 +24,9 @@ class Country
     #[ORM\OneToMany(mappedBy: 'country', targetEntity: City::class)]
     private Collection $cities;
 
+    #[ORM\Column(length: 10)]
+    private ?string $phoneCode = null;
+
     public function __construct()
     {
         $this->cities = new ArrayCollection();
@@ -85,6 +88,18 @@ class Country
                 $city->setCountry(null);
             }
         }
+
+        return $this;
+    }
+
+    public function getPhoneCode(): ?string
+    {
+        return $this->phoneCode;
+    }
+
+    public function setPhoneCode(string $phoneCode): self
+    {
+        $this->phoneCode = $phoneCode;
 
         return $this;
     }

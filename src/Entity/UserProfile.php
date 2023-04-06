@@ -12,6 +12,7 @@ use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use phpDocumentor\Reflection\Types\Integer;
 use Symfony\Component\Serializer\Annotation\Groups;
+use App\Validator\Constraint as CustomAssert;
 
 #[ORM\Entity(repositoryClass: UserProfileRepository::class)]
 #[ApiResource(
@@ -31,7 +32,7 @@ class UserProfile
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
-    #[ORM\Column(type: Integer::class)]
+    #[ORM\Column]
     private ?int $id = null;
 
     #[ORM\OneToOne(inversedBy: 'userProfile', cascade: ['persist', 'remove'])]
@@ -53,6 +54,7 @@ class UserProfile
 
     #[ORM\Column(length: 255, nullable: true)]
     #[Groups(['profile:read', 'profile:write'])]
+    #[CustomAssert\ConstraintPhoneNumber(countryCode: 'UA')]
     private ?string $phone = null;
 
     #[ORM\ManyToOne(inversedBy: 'userProfiles')]

@@ -39,6 +39,11 @@ class CountryRepository extends ServiceEntityRepository
         }
     }
 
+    public function findByCountryCode(string $countryCode)
+    {
+        return $this->findOneBy(['code' => $countryCode]);
+    }
+
 //    /**
 //     * @return Country[] Returns an array of Country objects
 //     */
